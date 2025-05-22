@@ -1,6 +1,7 @@
 import pygame # klíčová knihovna umožňující vytvářet jednoduše nejen hry
 import numpy.random as random
 import pygame.sprite
+import pygame.transform
 pygame.init() # nutný příkaz hned na začátku pro správnou inicializaci knihovny
 pozice = 470
 zpozice = 0
@@ -99,26 +100,40 @@ class Hstrela(pygame.sprite.Sprite):
         self.image = pygame.image.load("Hstrela.png")
         self.image = pygame.transform.scale(self.image, (50,9))
         self.rect = self.image.get_rect(midbottom=(druhasouradnice, (poziceed)))
-        self.speed = random.randint(28,55)
+        self.speed = random.randint(31,55)
     def update(self):
         self.rect.right += self.speed
         if self.rect.left > 1680:
             self.kill()
-        
     def killllll(self):
         self.kill()
+class Srdicka(pygame.sprite.Sprite):
+    def __init__(self):
+          super().__init__()
+          sr1=pygame.image.load("srdicka1.png")
+          sr2=pygame.image.load("srdicka2.png")
+          sr3=pygame.image.load("srdicka3.png")
+          sr4=pygame.image.load("srdicka4.png")
+          sr5=pygame.image.load("srdicka5.png")
+          sr6=pygame.image.load("srdicka6.png")
+          self.kardioseznam = [sr1,sr2,sr3,sr4,sr5,sr6]
+          self.image = sr2
+          self.image = pygame.transform.scale(self.image,(335,70))
+          self.rect = self.image.get_rect(midbottom = (1600, 1000))
+    def update(self, ICHS):
+        self.image = self.kardioseznam[ICHS]
 def is_collision():
     if pygame.sprite.spritecollide(player.sprite, obstacle_group, False):
         obstacle_group.empty() # smažeme všechny překážky
         Hstrelagruppen.empty()
-        return False # hra má skončit
-    return True # hra má pokračovat
+        return -1 # hra má skončit
+    return 0 # hra má pokračovat
 def ISIS_collision():
     if pygame.sprite.spritecollide(zloun.sprite, Hstrelagruppen, False):
         Hstrelagruppen.empty() # smažeme všechny překážky
         obstacle_group.empty()
-        return False # hra má skončit
-    return True # hra má pokračovat
+        return 1 # hra má skončit
+    return 0 # hra má pokračovat
 
 # herní okno
 window_width = 1920
@@ -146,10 +161,11 @@ obstacle_group = pygame.sprite.Group()
 Hstrelagruppen = pygame.sprite.Group()
 coolecko = pygame.sprite.GroupSingle()
 coolecko.add(Nabito())
+zivot = pygame.sprite.GroupSingle()
+zivot.add(Srdicka())
 #obstacle_group.add(Obstacle(pozice))
 
-game_active = True
-game_hyperactive = True
+game_hyperactive = 1
 text_font = pygame.font.Font(None,100) # 100 je velikost písma
 text_surface = text_font.render("GAME OVER!", True, "Black")
 text_rect = text_surface.get_rect(center=(window_width/2, window_height/2))
@@ -165,18 +181,13 @@ while True:
             exit() # úplně opustíme herní smyčku, celý program se ukončí
     keys = pygame.key.get_pressed()
     if keys[pygame.K_SPACE]:
-        if game_active == False: # když je GAME OVER stav
+        if game_hyperactive <= 0 or game_hyperactive >= 5: # když je GAME OVER stav
             score=0
             Munice=0 
-            game_active = True
+            game_hyperactive = 1
             coolecko.update(1)
-        if game_hyperactive == False:
-             score=0
-             Munice=0
-             game_hyperactive = True
-             coolecko.update(1)
     if keys[pygame.K_RIGHT]:
-        if Munice > 56 and score>50 and game_active==True and game_hyperactive == True:
+        if Munice > 56 and score>50 and game_hyperactive>=1 and game_hyperactive <= 4:
             Hstrelagruppen.add(Hstrela(Promena+170, pozice+60))
             Munice = 0
     if keys[pygame.K_w]:
@@ -234,7 +245,7 @@ while True:
                     Zlounpozice=Zlounpozice-2
             else: None
 
-    if game_active and game_hyperactive:
+    if game_hyperactive>=1 and game_hyperactive<=4:
         if Munice%7==0 and Munice<=56:
             coolecko.update(0)
         # pozadí
@@ -247,6 +258,7 @@ while True:
         Mrak_group.draw(screen)
         Mrak_group.update()
         coolecko.draw(screen)
+        zivot.draw(screen)
         # HRÁČ
         obstacle_group.draw(screen)
         obstacle_group.update()
@@ -257,10 +269,10 @@ while True:
         player.draw(screen)
         player.update(Promena,pozice)
 
-        game_active = is_collision() # nastala kolize? pokud ano -> konec hry
-        game_hyperactive = ISIS_collision()
+        game_hyperactive = game_hyperactive + (is_collision()) + (ISIS_collision()) # nastala kolize? pokud ano -> konec hry
+        zivot.update(game_hyperactive)
         score=score+1
-        if score%200==0:
+        if score%220==0:
             Mrak_group.add(Mrak()) 
         if score%23==0 and score>20:
             obstacle_group.add(Obstacle(Zlounpozice+30,0))
@@ -268,7 +280,7 @@ while True:
             obstacle_group.add(Obstacle(Zlounpozice-40,2))
             obstacle_group.add(Obstacle(Zlounpozice+164,1)) 
     else:  # hra neběží
-        if game_hyperactive == False:
+        if game_hyperactive >= 5:
              screen.blit(vittoria,(0,0))
              screen.blit(score_surface,score_rect)
         else:
