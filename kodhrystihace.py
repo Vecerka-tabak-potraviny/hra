@@ -12,15 +12,26 @@ Munice = -1
 class Player(pygame.sprite.Sprite):
     def __init__(self): # konstruktor - volá se vždy při vytvoření (inicializaci)
         super().__init__() # volá konstruktor třídy Sprite pro správnou inicializaci
-        self.image = pygame.image.load("electra2.png")
+        rovne = pygame.image.load("electra2.png")
+        dolu = pygame.image.load("electra4.png")
+        nahoru = pygame.image.load("electra3.png")
+        self.kam = [dolu,rovne,nahoru]
+        self.image = self.kam[1]
         self.image = pygame.transform.scale(self.image, (220,112))
         self.rect = self.image.get_rect(midbottom = (Promena, pozice))
-    def apply_gravity(self,poziceee):
+    def apply_gravity(self,poziceee,wwss):
+            self.image = self.kam[wwss]
+            if wwss == 0:
+                self.image = pygame.transform.scale(self.image,(221,108))
+            elif wwss == 2:
+                 self.image = pygame.transform.scale(self.image,(220,111))
+            else:
+                 self.image = pygame.transform.scale(self.image,(220,112))
             self.rect.y = (poziceee)
     def apply_dopredudozadu(self, pozicex):
             self.rect.x = (pozicex)
-    def update(self,pozicex,pozicey):
-        self.apply_gravity(pozicey)
+    def update(self,pozicex,pozicey,wwss):
+        self.apply_gravity(pozicey,wwss)
         self.apply_dopredudozadu(pozicex)
 class Nabito(pygame.sprite.Sprite):
     def __init__(self): # konstruktor - volá se vždy při vytvoření (inicializaci)
@@ -33,8 +44,16 @@ class Nabito(pygame.sprite.Sprite):
         nena6 = pygame.image.load("nenabito6.png")
         nena7 = pygame.image.load("nenabito7.png")
         nena8 = pygame.image.load("nenabito8.png")
+        nena9 = pygame.image.load("nenabito9.png")
+        nena10 = pygame.image.load("nenabito10.png")
+        nena11 = pygame.image.load("nenabito11.png")
+        nena12 = pygame.image.load("nenabito12.png")
+        nena13 = pygame.image.load("nenabito13.png")
+        nena14 = pygame.image.load("nenabito14.png")
+        nena15 = pygame.image.load("nenabito15.png")
+        nena16 = pygame.image.load("nenabito16.png")
         na = pygame.image.load("nabito.png")
-        self.kolecko=[nena1,nena2,nena3,nena4,nena5,nena6,nena7,nena8,na]
+        self.kolecko=[nena1,nena9,nena2,nena10,nena3,nena11,nena4,nena12,nena5,nena13,nena6,nena14,nena7,nena15,nena8,nena16,na]
         self.fazor=0
         self.image = self.kolecko[self.fazor]
         self.image = pygame.transform.scale(self.image, (88,88))
@@ -43,7 +62,7 @@ class Nabito(pygame.sprite.Sprite):
         if k == 1:
              self.fazor=0
         else:
-            if self.fazor>8:
+            if self.fazor>16:
                 self.fazor=0
             self.image = self.kolecko[self.fazor]
             self.image = pygame.transform.scale(self.image, (88,88))
@@ -173,6 +192,7 @@ score_font = pygame.font.Font(None,29) # 100 je velikost písma
 score=0
 # herní smyčka
 while True:
+    ws=1
     Munice = Munice+1
     # zjistíme co dělá hráč za akci
     for event in pygame.event.get():
@@ -187,12 +207,14 @@ while True:
             game_hyperactive = 1
             coolecko.update(1)
     if keys[pygame.K_RIGHT]:
-        if Munice > 56 and score>50 and game_hyperactive>=1 and game_hyperactive <= 4:
+        if Munice > 48 and score>50 and game_hyperactive>=1 and game_hyperactive <= 4:
             Hstrelagruppen.add(Hstrela(Promena+170, pozice+60))
             Munice = 0
     if keys[pygame.K_w]:
+            ws=2
             zpozice = -20
     if keys[pygame.K_s]:
+            ws=ws-1
             zpozice =  +20
     if keys[pygame.K_a]:
             aaapozice = -20
@@ -246,7 +268,7 @@ while True:
             else: None
 
     if game_hyperactive>=1 and game_hyperactive<=4:
-        if Munice%7==0 and Munice<=56:
+        if Munice%3==0 and Munice<=48:
             coolecko.update(0)
         # pozadí
         screen.blit(sky_surface,(0,0)) # položíme sky_surface na souřadnice [0,0]
@@ -267,7 +289,7 @@ while True:
         Hstrelagruppen.draw(screen)
         Hstrelagruppen.update()
         player.draw(screen)
-        player.update(Promena,pozice)
+        player.update(Promena,pozice,ws)
 
         game_hyperactive = game_hyperactive + (is_collision()) + (ISIS_collision()) # nastala kolize? pokud ano -> konec hry
         zivot.update(game_hyperactive)
