@@ -15,22 +15,36 @@ class Player(pygame.sprite.Sprite):
         rovne = pygame.image.load("electra2.png")
         dolu = pygame.image.load("electra4.png")
         nahoru = pygame.image.load("electra3.png")
-        self.kam = [dolu,rovne,nahoru]
+        lansenrovne = pygame.image.load("lansen.png")
+        ldolu = pygame.image.load("lansendolu.png")
+        lhoru = pygame.image.load("lansenhoru.png")
+        self.letoun = 0
+        self.kam = [dolu,rovne,nahoru,0,0,0,ldolu,lansenrovne,lhoru]
         self.image = self.kam[1]
         self.image = pygame.transform.scale(self.image, (220,112))
         self.rect = self.image.get_rect(midbottom = (Promena, pozice))
     def apply_gravity(self,poziceee,wwss):
-            self.image = self.kam[wwss]
+            self.image = self.kam[wwss+3*(self.letoun)]
             if wwss == 0:
-                self.image = pygame.transform.scale(self.image,(221,108))
+                if self.letoun==0:
+                    self.image = pygame.transform.scale(self.image,(221,108))
+                else:
+                     self.image = pygame.transform.scale(self.image,(279,125))
             elif wwss == 2:
-                 self.image = pygame.transform.scale(self.image,(220,111))
+                if self.letoun==0:
+                    self.image = pygame.transform.scale(self.image,(220,111))
+                else:
+                    self.image = pygame.transform.scale(self.image,(278,119))
             else:
-                 self.image = pygame.transform.scale(self.image,(220,112))
+                if self.letoun==0:
+                    self.image = pygame.transform.scale(self.image,(220,112))
+                else:
+                    self.image = pygame.transform.scale(self.image,(280,120))
             self.rect.y = (poziceee)
     def apply_dopredudozadu(self, pozicex):
             self.rect.x = (pozicex)
-    def update(self,pozicex,pozicey,wwss):
+    def update(self,pozicex,pozicey,wwss,typletounu):
+        self.letoun = typletounu
         self.apply_gravity(pozicey,wwss)
         self.apply_dopredudozadu(pozicex)
 class Nabito(pygame.sprite.Sprite):
@@ -81,32 +95,32 @@ class Zloun(pygame.sprite.Sprite):
     def update(self,pozicew):
         self.apply_gravity(pozicew-50)
 class Mrak(pygame.sprite.Sprite):
-    def __init__(self): # konstruktor - volá se vždy při vytvoření (inicializaci)
+    def __init__(self,cimletim): # konstruktor - volá se vždy při vytvoření (inicializaci)
         super().__init__() # volá konstruktor třídy Sprite pro správnou inicializaci
         self.image = pygame.image.load("mrak.png")
         self.image = pygame.transform.scale(self.image, (random.randint(150)+580,random.randint(150)+250))
         self.rect = self.image.get_rect(midbottom = (2300,random.randint(240, 1100) ))
-        self.speed = random.randint(4,12)
+        self.speed = random.randint(4+(cimletim*6),12+(cimletim*3))
     def update(self):
         self.rect.left -= self.speed
         if self.rect.right < -5:
             self.kill()
 class Obstacle(pygame.sprite.Sprite):
-    def __init__(self,pozicee,x): # konstruktor - volá se vždy při vytvoření (inicializaci)
+    def __init__(self,pozicee,x,cimletim): # konstruktor - volá se vždy při vytvoření (inicializaci)
         super().__init__() # volá konstruktor třídy Sprite pro správnou inicializaci
         self.image = pygame.image.load("zlastrela.png")
         if x == 0:
             self.image = pygame.transform.scale(self.image, (50,9))
             self.rect = self.image.get_rect(midbottom=(1620, (pozicee)))
-            self.speed = random.randint(38,45)
+            self.speed = random.randint(36+(cimletim*6),45+(cimletim*6))
         elif x == 1:
             self.image = pygame.transform.scale(self.image, (39,7))
             self.rect = self.image.get_rect(midbottom=(1690, (pozicee)))
-            self.speed = random.randint(38,62)
+            self.speed = random.randint(36+(cimletim*6),60+(cimletim*7))
         else:
             self.image = pygame.transform.scale(self.image, (39,7))
             self.rect = self.image.get_rect(midbottom=(1570, (pozicee)))
-            self.speed = random.randint(38,62)
+            self.speed = random.randint(36+(cimletim*6),60+(cimletim*7))
     def update(self):
         self.rect.left -= self.speed
         if self.rect.right < 35:
@@ -114,12 +128,12 @@ class Obstacle(pygame.sprite.Sprite):
     def killllll(self):
         self.kill()
 class Hstrela(pygame.sprite.Sprite):
-    def __init__(self,druhasouradnice,poziceed): # konstruktor - volá se vždy při vytvoření (inicializaci)
+    def __init__(self,druhasouradnice,poziceed,rych): # konstruktor - volá se vždy při vytvoření (inicializaci)
         super().__init__() # volá konstruktor třídy Sprite pro správnou inicializaci
         self.image = pygame.image.load("Hstrela.png")
         self.image = pygame.transform.scale(self.image, (50,9))
         self.rect = self.image.get_rect(midbottom=(druhasouradnice, (poziceed)))
-        self.speed = random.randint(31,55)
+        self.speed = (45+rych)
     def update(self):
         self.rect.right += self.speed
         if self.rect.left > 1680:
@@ -165,7 +179,9 @@ clock = pygame.time.Clock() # díky hodinám nastavíme frekvenci obnovování h
 
 # přidání objektů (tzv. surface) do scény
 sky_surface = pygame.image.load("pozadíhra.png")
-ground_surface = pygame.image.load("gameover.png")
+g0=pygame.image.load("gameover.png")
+g1=pygame.image.load("gameoverlan.png")
+ground_surface = [g0,0,g1]
 vittoria = pygame.image.load("gameover2.png")
 # GROUPS
 # GroupSingle - skupina s 1 objektem (hráč)
@@ -175,7 +191,6 @@ player.add(Player()) # přidáme do ní novéh hráče typu Player (třída, co 
 zloun = pygame.sprite.GroupSingle()
 zloun.add(Zloun())
 Mrak_group = pygame.sprite.Group()
-Mrak_group.add(Mrak())
 obstacle_group = pygame.sprite.Group()
 Hstrelagruppen = pygame.sprite.Group()
 coolecko = pygame.sprite.GroupSingle()
@@ -190,6 +205,7 @@ text_surface = text_font.render("GAME OVER!", True, "Black")
 text_rect = text_surface.get_rect(center=(window_width/2, window_height/2))
 score_font = pygame.font.Font(None,29) # 100 je velikost písma
 score=0
+cimletim = 0
 # herní smyčka
 while True:
     ws=1
@@ -208,18 +224,22 @@ while True:
             coolecko.update(1)
     if keys[pygame.K_RIGHT]:
         if Munice > 48 and score>50 and game_hyperactive>=1 and game_hyperactive <= 4:
-            Hstrelagruppen.add(Hstrela(Promena+170, pozice+60))
+            if cimletim == 2:
+                 Hstrelagruppen.add(Hstrela(Promena+100,pozice+12,8))
+                 Hstrelagruppen.add(Hstrela(Promena+100, pozice+120,8))
+            else:
+                Hstrelagruppen.add(Hstrela(Promena+170, pozice+60,0))
             Munice = 0
     if keys[pygame.K_w]:
             ws=2
-            zpozice = -20
+            zpozice = -18-(cimletim*3)
     if keys[pygame.K_s]:
             ws=ws-1
-            zpozice =  +20
+            zpozice =  +18+(cimletim*3)
     if keys[pygame.K_a]:
-            aaapozice = -20
+            aaapozice = -18-(cimletim*3)
     if keys[pygame.K_d]:
-            aaapozice =  +20
+            aaapozice =  +18+(cimletim*3)
     if aaapozice>0 and Promena < 900:
             aaapozice +=-1
             Promena = (Promena + aaapozice)
@@ -289,24 +309,24 @@ while True:
         Hstrelagruppen.draw(screen)
         Hstrelagruppen.update()
         player.draw(screen)
-        player.update(Promena,pozice,ws)
+        player.update(Promena,pozice,ws,cimletim)
 
         game_hyperactive = game_hyperactive + (is_collision()) + (ISIS_collision()) # nastala kolize? pokud ano -> konec hry
         zivot.update(game_hyperactive)
         score=score+1
         if score%220==0:
-            Mrak_group.add(Mrak()) 
+            Mrak_group.add(Mrak(cimletim)) 
         if score%23==0 and score>20:
-            obstacle_group.add(Obstacle(Zlounpozice+30,0))
-            obstacle_group.add(Obstacle(Zlounpozice+90,0))
-            obstacle_group.add(Obstacle(Zlounpozice-40,2))
-            obstacle_group.add(Obstacle(Zlounpozice+164,1)) 
+            obstacle_group.add(Obstacle(Zlounpozice+30,0,cimletim))
+            obstacle_group.add(Obstacle(Zlounpozice+90,0,cimletim))
+            obstacle_group.add(Obstacle(Zlounpozice-40,2,cimletim))
+            obstacle_group.add(Obstacle(Zlounpozice+164,1,cimletim)) 
     else:  # hra neběží
         if game_hyperactive >= 5:
              screen.blit(vittoria,(0,0))
              screen.blit(score_surface,score_rect)
         else:
-            screen.blit(ground_surface,(0,0))
+            screen.blit(ground_surface[cimletim],(0,0))
             screen.blit(score_surface,score_rect)  
 
     pygame.display.update() # updatujeme vykreslené okno
