@@ -243,7 +243,7 @@ while True:
         else: 
              None    
             
-    if keys[pygame.K_RIGHT]:
+    if keys[pygame.K_RIGHT] or keys[pygame.K_UP]:
         if Munice > 48 and score>50 and game_hyperactive>=1 and game_hyperactive <= 4:
             if cimletim == 2:
                  Hstrelagruppen.add(Hstrela(Promena+100,pozice+12,8))
