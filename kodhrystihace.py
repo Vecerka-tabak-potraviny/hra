@@ -313,7 +313,6 @@ while True:
             elif pozice <=50:
                     Zlounpozice=Zlounpozice-2
             else: None
-
     if game_hyperactive>=1 and game_hyperactive<=4:
         if Munice%3==0 and Munice<=48:
             coolecko.update(0)
@@ -337,7 +336,6 @@ while True:
         Hstrelagruppen.update()
         player.draw(screen)
         player.update(Promena,pozice,ws,cimletim)
-
         game_hyperactive = game_hyperactive + (is_collision()) + (ISIS_collision()) # nastala kolize? pokud ano -> konec hry
         zivot.update(game_hyperactive)
         score=score+1
@@ -363,6 +361,5 @@ while True:
         else:
             screen.blit(ground_surface[cimletim],(0,0))
             screen.blit(score_surface,score_rect)  
-
     pygame.display.update() # updatujeme vykreslené okno
     clock.tick(60) # herní smyčka proběhne maximálně 60x za sekundu
