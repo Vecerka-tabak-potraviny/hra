@@ -18,8 +18,11 @@ class Player(pygame.sprite.Sprite):
         lansenrovne = pygame.image.load("lansen.png")
         ldolu = pygame.image.load("lansendolu.png")
         lhoru = pygame.image.load("lansenhoru.png")
+        provne = pygame.image.load("p47.png")
+        pdolu = pygame.image.load("p47dolu.png")
+        phoru = pygame.image.load("p47na.png")
         self.letoun = 0
-        self.kam = [dolu,rovne,nahoru,0,0,0,ldolu,lansenrovne,lhoru]
+        self.kam = [dolu,rovne,nahoru,pdolu,provne,phoru,ldolu,lansenrovne,lhoru]
         self.image = self.kam[1]
         self.image = pygame.transform.scale(self.image, (220,112))
         self.rect = self.image.get_rect(midbottom = (Promena, pozice))
@@ -28,16 +31,22 @@ class Player(pygame.sprite.Sprite):
             if wwss == 0:
                 if self.letoun==0:
                     self.image = pygame.transform.scale(self.image,(221,108))
+                elif self.letoun==1:
+                     self.image = pygame.transform.scale(self.image,(257,128))
                 else:
                      self.image = pygame.transform.scale(self.image,(279,125))
             elif wwss == 2:
                 if self.letoun==0:
                     self.image = pygame.transform.scale(self.image,(220,111))
+                elif self.letoun == 1:
+                     self.image = pygame.transform.scale(self.image,(250,120))
                 else:
                     self.image = pygame.transform.scale(self.image,(278,119))
             else:
                 if self.letoun==0:
                     self.image = pygame.transform.scale(self.image,(220,112))
+                elif self.letoun == 1:
+                    self.image = pygame.transform.scale(self.image,(255,114))
                 else:
                     self.image = pygame.transform.scale(self.image,(280,120))
             self.rect.y = (poziceee)
@@ -112,7 +121,7 @@ class Obstacle(pygame.sprite.Sprite):
         if x == 0:
             self.image = pygame.transform.scale(self.image, (50,9))
             self.rect = self.image.get_rect(midbottom=(1620, (pozicee)))
-            self.speed = random.randint(36+(cimletim*6),45+(cimletim*6))
+            self.speed = random.randint(40+(cimletim*6),49+(cimletim*8))
         elif x == 1:
             self.image = pygame.transform.scale(self.image, (39,7))
             self.rect = self.image.get_rect(midbottom=(1690, (pozicee)))
@@ -181,8 +190,13 @@ clock = pygame.time.Clock() # díky hodinám nastavíme frekvenci obnovování h
 sky_surface = pygame.image.load("pozadíhra.png")
 g0=pygame.image.load("gameover.png")
 g1=pygame.image.load("gameoverlan.png")
-ground_surface = [g0,0,g1]
+gp = pygame.image.load("gameover47.png")
+ground_surface = [g0,gp,g1]
 vittoria = pygame.image.load("gameover2.png")
+vyber0 = pygame.image.load("vyber0.png")
+vyber1 = pygame.image.load("vyber1.png")
+vyber2 = pygame.image.load("vyber2.png")
+vybersi = [vyber0,vyber1,vyber2]
 # GROUPS
 # GroupSingle - skupina s 1 objektem (hráč)
 # Group - skupina s více objekty (nepřátelé)
@@ -205,7 +219,7 @@ text_surface = text_font.render("GAME OVER!", True, "Black")
 text_rect = text_surface.get_rect(center=(window_width/2, window_height/2))
 score_font = pygame.font.Font(None,29) # 100 je velikost písma
 score=0
-cimletim = 0
+cimletim = 1
 # herní smyčka
 while True:
     ws=1
@@ -217,16 +231,25 @@ while True:
             exit() # úplně opustíme herní smyčku, celý program se ukončí
     keys = pygame.key.get_pressed()
     if keys[pygame.K_SPACE]:
-        if game_hyperactive <= 0 or game_hyperactive >= 5: # když je GAME OVER stav
+        if game_hyperactive <= 0 or game_hyperactive == 5: # když je GAME OVER stav
             score=0
             Munice=0 
-            game_hyperactive = 1
             coolecko.update(1)
+            game_hyperactive = 6
+        elif game_hyperactive == 6 and score >1:
+            score = 0
+            Munice=0
+            game_hyperactive = 1
+        else: 
+             None    
+            
     if keys[pygame.K_RIGHT]:
         if Munice > 48 and score>50 and game_hyperactive>=1 and game_hyperactive <= 4:
             if cimletim == 2:
                  Hstrelagruppen.add(Hstrela(Promena+100,pozice+12,8))
                  Hstrelagruppen.add(Hstrela(Promena+100, pozice+120,8))
+            elif cimletim == 1:
+                 Hstrelagruppen.add(Hstrela(Promena+220,pozice+55,3))
             else:
                 Hstrelagruppen.add(Hstrela(Promena+170, pozice+60,0))
             Munice = 0
@@ -238,8 +261,12 @@ while True:
             zpozice =  +18+(cimletim*3)
     if keys[pygame.K_a]:
             aaapozice = -18-(cimletim*3)
+            if game_hyperactive==6 and score%2==1:
+                 cimletim = (3+cimletim-1)%3
     if keys[pygame.K_d]:
             aaapozice =  +18+(cimletim*3)
+            if game_hyperactive==6 and score%2==1:
+                 cimletim = (cimletim+1)%3
     if aaapozice>0 and Promena < 900:
             aaapozice +=-1
             Promena = (Promena + aaapozice)
@@ -316,13 +343,21 @@ while True:
         score=score+1
         if score%220==0:
             Mrak_group.add(Mrak(cimletim)) 
-        if score%23==0 and score>20:
+        if score%21==0 and score>20:
             obstacle_group.add(Obstacle(Zlounpozice+30,0,cimletim))
             obstacle_group.add(Obstacle(Zlounpozice+90,0,cimletim))
             obstacle_group.add(Obstacle(Zlounpozice-40,2,cimletim))
             obstacle_group.add(Obstacle(Zlounpozice+164,1,cimletim)) 
+    elif game_hyperactive == 6:
+        screen.blit(sky_surface,(0,0))
+        Mrak_group.draw(screen)
+        Mrak_group.update()
+        screen.blit(vybersi[cimletim],(0,0))
+        score=score+1
+        if score%160==0:
+            Mrak_group.add(Mrak(cimletim)) 
     else:  # hra neběží
-        if game_hyperactive >= 5:
+        if game_hyperactive == 5:
              screen.blit(vittoria,(0,0))
              screen.blit(score_surface,score_rect)
         else:
