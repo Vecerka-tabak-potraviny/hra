@@ -1,14 +1,18 @@
 import pygame # klíčová knihovna umožňující vytvářet jednoduše nejen hry
 import numpy.random as random
+import pygame.display
 import pygame.sprite
 import pygame.transform
+import pygame.mixer
 pygame.init() # nutný příkaz hned na začátku pro správnou inicializaci knihovny
+pygame.mixer.music.set_volume(0.99)
 pozice = 470
 zpozice = 0
 Zlounpozice = 400
 aaapozice = 0
 Promena = 300
 Munice = -1
+
 class Player(pygame.sprite.Sprite):
     def __init__(self): # konstruktor - volá se vždy při vytvoření (inicializaci)
         super().__init__() # volá konstruktor třídy Sprite pro správnou inicializaci
@@ -176,16 +180,21 @@ def ISIS_collision():
         obstacle_group.empty()
         return 1 # hra má skončit
     return 0 # hra má pokračovat
-
-# herní okno
 window_width = 1920
 window_height = 1080
 screen = pygame.display.set_mode((window_width, window_height))
     # dvojice (w,h) v parametru se nazývá *tuple*
 pygame.display.set_caption("FIGHT/ER") # nastavíme do hlavičky okna název hry
-
+pygame.display.set_icon(pygame.image.load("blackwidow3.png"))
 clock = pygame.time.Clock() # díky hodinám nastavíme frekvenci obnovování herního okna
-
+hudbavehre = pygame.mixer.Sound("nrocpop.mp3")
+hudbavehre.play(loops=-1)
+vit_toria = pygame.mixer.Sound("vittoria.mp3")
+cvak = pygame.mixer.Sound("cvak.mp3")
+cvak2 = pygame.mixer.Sound("cvak2.mp3")
+cvak3 = pygame.mixer.Sound("cvak3.mp3")
+vystrel1 = pygame.mixer.Sound("vystrel1.mp3")
+vystrel1.set_volume(0.5)
 # přidání objektů (tzv. surface) do scény
 sky_surface = pygame.image.load("pozadíhra.png")
 g0=pygame.image.load("gameover.png")
@@ -235,11 +244,14 @@ while True:
             score=0
             Munice=0 
             coolecko.update(1)
+            cvak2.play()
             game_hyperactive = 6
         elif game_hyperactive == 6 and score >1:
             score = 0
             Munice=0
             game_hyperactive = 1
+            cvak2.play()
+            hudbavehre.play()
         else: 
              None    
             
@@ -261,12 +273,14 @@ while True:
             zpozice =  +18+(cimletim*3)
     if keys[pygame.K_a]:
             aaapozice = -18-(cimletim*3)
-            if game_hyperactive==6 and score%2==1:
+            if game_hyperactive==6 and (score%3==1 or score%3==2):
                  cimletim = (3+cimletim-1)%3
+                 cvak.play()
     if keys[pygame.K_d]:
             aaapozice =  +18+(cimletim*3)
-            if game_hyperactive==6 and score%2==1:
+            if game_hyperactive==6 and (score%3==1 or score%3==2):
                  cimletim = (cimletim+1)%3
+                 cvak.play()
     if aaapozice>0 and Promena < 900:
             aaapozice +=-1
             Promena = (Promena + aaapozice)
@@ -286,7 +300,7 @@ while True:
             Zlounpozice = (Zlounpozice+zpozice)+5
          else: 
                 zpozice = 0
-    elif Zlounpozice < 150:
+    elif Zlounpozice < 120:
          if zpozice>0 and pozice < 900:
             zpozice +=-1
             pozice = (pozice + zpozice)
@@ -314,6 +328,8 @@ while True:
                     Zlounpozice=Zlounpozice-2
             else: None
     if game_hyperactive>=1 and game_hyperactive<=4:
+        if Munice == 47:
+             cvak3.play()
         if Munice%3==0 and Munice<=48:
             coolecko.update(0)
         # pozadí
@@ -337,6 +353,10 @@ while True:
         player.draw(screen)
         player.update(Promena,pozice,ws,cimletim)
         game_hyperactive = game_hyperactive + (is_collision()) + (ISIS_collision()) # nastala kolize? pokud ano -> konec hry
+        if game_hyperactive ==5:
+             vit_toria.play()
+        if game_hyperactive == 0:
+             vystrel1.play()
         zivot.update(game_hyperactive)
         score=score+1
         if score%220==0:
@@ -345,7 +365,7 @@ while True:
             obstacle_group.add(Obstacle(Zlounpozice+30,0,cimletim))
             obstacle_group.add(Obstacle(Zlounpozice+90,0,cimletim))
             obstacle_group.add(Obstacle(Zlounpozice-40,2,cimletim))
-            obstacle_group.add(Obstacle(Zlounpozice+164,1,cimletim)) 
+            obstacle_group.add(Obstacle(Zlounpozice+164,1,cimletim))
     elif game_hyperactive == 6:
         screen.blit(sky_surface,(0,0))
         Mrak_group.draw(screen)
@@ -355,6 +375,7 @@ while True:
         if score%160==0:
             Mrak_group.add(Mrak(cimletim)) 
     else:  # hra neběží
+        hudbavehre.stop()
         if game_hyperactive == 5:
              screen.blit(vittoria,(0,0))
              screen.blit(score_surface,score_rect)
