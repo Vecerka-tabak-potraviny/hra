@@ -171,13 +171,11 @@ class Srdicka(pygame.sprite.Sprite):
 def is_collision():
     if pygame.sprite.spritecollide(player.sprite, obstacle_group, False):
         obstacle_group.empty() # smažeme všechny překážky
-        Hstrelagruppen.empty()
         return -1 # hra má skončit
     return 0 # hra má pokračovat
 def ISIS_collision():
     if pygame.sprite.spritecollide(zloun.sprite, Hstrelagruppen, False):
         Hstrelagruppen.empty() # smažeme všechny překážky
-        obstacle_group.empty()
         return 1 # hra má skončit
     return 0 # hra má pokračovat
 window_width = 1920
@@ -239,6 +237,9 @@ while True:
             pygame.quit() # zavřeme herní okno
             exit() # úplně opustíme herní smyčku, celý program se ukončí
     keys = pygame.key.get_pressed()
+    if keys[pygame.K_ESCAPE]:
+        pygame.quit() # zavřeme herní okno
+        exit()
     if keys[pygame.K_SPACE]:
         if game_hyperactive <= 0 or game_hyperactive == 5: # když je GAME OVER stav
             score=0
@@ -355,8 +356,10 @@ while True:
         game_hyperactive = game_hyperactive + (is_collision()) + (ISIS_collision()) # nastala kolize? pokud ano -> konec hry
         if game_hyperactive ==5:
              vit_toria.play()
+             obstacle_group.empty()
         if game_hyperactive == 0:
              vystrel1.play()
+             Hstrelagruppen.empty()
         zivot.update(game_hyperactive)
         score=score+1
         if score%220==0:
